@@ -20,21 +20,26 @@ class App extends React.Component {
     };
   };
 
-  componentDidMount(){
+  componentDidMount() {
     this.socket = io(config[process.env.NODE_ENV].endpoint);
-
-    this.socket.on('init',(msg)=>{
-      this.setState((state)=>({
-        chat: [...state.chat,...msg.reverse()],
-      }),this.scrollToBottom);
-    });
-
-    this.socket.on('push',(msg)=>{
-      this.setState((state)=>({
-        chat:[...state.chat,msg],
-      }),this.scrollToBottom);
+  
+  // Load the last 10 messages in the window.
+  this.socket.on('init', (msg) => {
+    let msgReversed = msg.reverse();
+    this.setState((state) => ({
+      chat: [...state.chat, ...msgReversed],
+    }), this.scrollToBottom);
+  });
+  
+  // Update the chat if a new message is broadcasted.
+    this.socket.on('push', (msg) => {
+      this.setState((state) => ({
+        chat: [...state.chat, msg],
+      }), this.scrollToBottom);
     });
   }
+
+  
 
   handleContent(event){
     this.setState({
@@ -42,35 +47,35 @@ class App extends React.Component {
     });
   }
 
-  handleName(evemt){
+  handleName(event){
     this.setState({
-      name:event.target.value,
+      name: event.target.value,
     });
   }
 
-  handleSubmit(event){
-    console.log(event);
-
+  handleSubmit(event) {
+    // Prevent the form to reload the current page.
     event.preventDefault();
-
-    this.setState((state)=>{
-      console.log(state);
-      console.log('this', this.socket);
-
-      this.socket.emit('message',{
-        name:state.name,
-        content:state.content,
-      });
-      
-      return{
+  
+    // Send the new message to the server.
+    this.socket.emit('message', {
+      name: this.state.name,
+      content: this.state.content,
+    });
+  
+    this.setState((state) => {
+      // Update the chat with the user's message and remove the current message.
+      return {
         chat: [...state.chat, {
-          name:state.name,
-          content:state.content,
+          name: state.name,
+          content: state.content,
         }],
-        content:'',
+        content: '',
       };
-    },this.scrollToBottom);
+    }, this.scrollToBottom);
   }
+
+  
 
   scrollToBottom(){
     const chat = document.getElementById('chat');

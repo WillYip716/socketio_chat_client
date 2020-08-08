@@ -5,6 +5,6 @@ export default{
         endpoint: pkg.proxy
     },
     production:{
-        endpoint: window.location.hostname
+        endpoint: "http://10.0.2.15:4000/"
     }
 }
